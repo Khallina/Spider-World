@@ -121,10 +121,10 @@ class DragDrop extends JPanel {
     private int gridY = 200;
     private Shape currentShape = null;
     private int offsetX, offsetY;
-
+    private boolean isDragging = false;
     public DragDrop() {
         //setTransferHandler(new ShapeTransferHandler());
-
+        setShape(this.currentShape);
         // Add mouse listener
         addMouseListener(new MyMouseListener());
         addMouseMotionListener(new MyMouseMotionListener());
@@ -230,6 +230,16 @@ class DragDrop extends JPanel {
             if (currentShape != null && currentShape.contains(e.getPoint())) {
                 offsetX = e.getX() - currentShape.getX();
                 offsetY = e.getY() - currentShape.getY();
+                isDragging = true;
+            }
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            if (isDragging) {
+                // Handle the drop here
+                setShape(currentShape); // Clear the current shape
+                isDragging = false;
             }
         }
     }
@@ -237,86 +247,12 @@ class DragDrop extends JPanel {
     private class MyMouseMotionListener extends MouseAdapter {
         @Override
         public void mouseDragged(MouseEvent e) {
-            if (currentShape != null) {
+            if (isDragging) {
                 currentShape.setLocation(e.getX() - offsetX, e.getY() - offsetY);
                 repaint();
             }
-            // Start the drag
-            TransferHandler handler = getTransferHandler();
-            if (handler != null) {
-                handler.exportAsDrag(DragDrop.this, e, TransferHandler.COPY);
-            }
         }
     }
-/*
-    private class ShapeTransferHandler extends TransferHandler {
-        @Override
-        public int getSourceActions(JComponent c) {
-            return COPY;
-        }
-
-        @Override
-        protected Transferable createTransferable(JComponent c) {
-            return new ShapeTransferable(currentShape);
-        }
-
-        @Override
-        public boolean canImport(TransferHandler.TransferSupport support) {
-            return support.isDataFlavorSupported(new DataFlavor(Shape.class, "Shape"));
-        }
-
-        @Override
-        public boolean importData(TransferHandler.TransferSupport support) {
-            if (!canImport(support)) {
-                return false;
-            }
-
-            try {
-                Shape droppedShape = (Shape) support.getTransferable().getTransferData(
-                        new DataFlavor(Shape.class, "Shape"));
-
-                // Handle the dropped shape
-                setShape(droppedShape);
-                return true;
-            } catch (UnsupportedFlavorException | IOException e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-    }
-
-    private class ShapeTransferable implements Transferable {
-        private Shape shape;
-
-        public ShapeTransferable(Shape shape) {
-            this.shape = shape;
-        }
-
-        @Override
-        public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[]{new DataFlavor(Shape.class, "Shape")};
-        }
-
-        @Override
-        public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return flavor.equals(new DataFlavor(Shape.class, "Shape"));
-        }
-
-        @Override
-        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
-            if (isDataFlavorSupported(flavor)) {
-                return shape;
-            } else {
-                throw new UnsupportedFlavorException(flavor);
-            }
-        }
-    }
-
-    public void mouseDropped(Shape droppedShape) {
-        // Handle the dropped shape here
-        setShape(droppedShape);
-    }
-    */
 }
 
 public class SpiderWorldJPanel {
@@ -343,11 +279,15 @@ public class SpiderWorldJPanel {
 
         //DragDrop
         SwingUtilities.invokeLater(() -> {
-            DragDrop d = new DragDrop();
-            d.setShape(new Blocks(1000, 50, 100, 50,"step", Color.GRAY));
-            d.setShape(new Blocks(1000, 110, 100, 50, "turn", Color.GRAY));
-            d.setShape(new Blocks(1000, 170, 100, 50, "paint", Color.RED));
-            frame.add(d);
+            DragDrop d1 = new DragDrop();
+            d1.setShape(new Blocks(1000, 50, 100, 50,"step", Color.GRAY));
+            DragDrop d2 = new DragDrop();
+            d2.setShape(new Blocks(1000, 110, 100, 50, "turn", Color.GRAY));
+            DragDrop d3 = new DragDrop();
+            d3.setShape(new Blocks(1000, 170, 100, 50, "paint", Color.RED));
+            frame.add(d1);
+            frame.add(d2);
+            frame.add(d3);
         });
         frame.setVisible(true);
     }
